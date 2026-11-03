@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>College Admission Waiting List</title>
+  <style>
+    /* ─── Reset & Base ─────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* ─── Header ────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 24px #0005;
+    }
+    header .logo { font-size: 2rem; }
+    header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: 0.02em; }
+    header p  { font-size: 0.85rem; opacity: 0.8; margin-top: 2px; }
+
+    /* ─── Stats Bar ──────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      padding: 16px 32px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px 20px;
+      min-width: 130px;
+      text-align: center;
+      flex: 1;
+    }
+    .stat-card .val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #60a5fa;
+    }
+    .stat-card.green .val { color: #34d399; }
+    .stat-card.purple .val { color: #a78bfa; }
+    .stat-card.orange .val { color: #fb923c; }
+    .stat-card .lbl {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    /* ─── Layout ─────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 0;
+      height: calc(100vh - 160px);
+    }
+
+    /* ─── Sidebar (Form + Actions) ───────────────── */
+    .sidebar {
+      background: #1e293b;
+      border-right: 1px solid #334155;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #94a3b8;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ─── Form ───────────────────────────────────── */
+    .form-group { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    input, select {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px #3b82f620;
+    }
+    select option { background: #1e293b; }
+
+    /* ─── Buttons ────────────────────────────────── */
+    .btn {
+      width: 100%;
+      padding: 11px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.02em;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary  { background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; margin-top: 4px; }
+    .btn-success  { background: linear-gradient(135deg, #059669, #10b981); color: #fff; }
+    .btn-danger   { background: linear-gradient(135deg, #dc2626, #ef4444); color: #fff; }
+    .btn-warning  { background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff; }
+    .btn-secondary{ background: #334155; color: #e2e8f0; }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ─── Search ─────────────────────────────────── */
+    .search-row {
+      display: flex;
+      gap: 8px;
+    }
+    .search-row input { flex: 1; }
+    .search-row .btn  { width: auto; padding: 10px 14px; }
+
+    /* ─── Main Panel ─────────────────────────────── */
+    .main-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ─── Tabs ───────────────────────────────────── */
+    .tabs {
+      display: flex;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 0 24px;
+    }
+    .tab {
+      padding: 14px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab:hover { color: #94a3b8; }
+    .tab.active { color: #60a5fa; border-bottom-color: #3b82f6; }
+    .tab-badge {
+      background: #334155;
+      border-radius: 99px;
+      padding: 2px 7px;
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+    .tab.active .tab-badge { background: #1d4ed8; color: #bfdbfe; }
+
+    /* ─── Table Area ─────────────────────────────── */
+    .table-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    /* ─── Queue Visual ───────────────────────────── */
+    .queue-visual {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+      padding: 16px 0 24px;
+      min-height: 90px;
+    }
+    .q-node {
+      display: flex;
+      align-items: center;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .q-card {
+      background: #1e293b;
+      border: 1.5px solid #334155;
+      border-radius: 10px;
+      padding: 10px 16px;
+      min-width: 130px;
+      text-align: center;
+      position: relative;
+    }
+    .q-card.front-card {
+      border-color: #3b82f6;
+      background: #1e3a5f;
+    }
+    .q-card.rear-card  {
+      border-color: #7c3aed;
+      background: #2d1b69;
+    }
+    .q-card .q-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #60a5fa;
+      margin-bottom: 4px;
+    }
+    .q-card.rear-card .q-label { color: #a78bfa; }
+    .q-card .q-id   { font-size: 0.7rem; color: #64748b; margin-bottom: 2px; }
+    .q-card .q-name { font-size: 0.82rem; font-weight: 700; white-space: nowrap; }
+    .q-card .q-score{ font-size: 0.7rem; color: #94a3b8; margin-top: 2px; }
+    .q-arrow {
+      color: #334155;
+      font-size: 1.2rem;
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+    .queue-empty {
+      color: #475569;
+      font-size: 0.9rem;
+      padding: 20px;
+      text-align: center;
+      width: 100%;
+    }
+
+    /* ─── Table ──────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    thead th {
+      background: #1e293b;
+      color: #94a3b8;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      border-bottom: 1px solid #334155;
+      position: sticky;
+      top: 0;
+    }
+    tbody tr {
+      border-bottom: 1px solid #1e293b;
+      transition: background 0.15s;
+      animation: fadeRow 0.3s ease;
+    }
+    @keyframes fadeRow {
+      from { opacity: 0; background: #1d4ed820; }
+      to   { opacity: 1; }
+    }
+    tbody tr:hover { background: #1e293b; }
+    tbody td { padding: 12px 14px; }
+    tbody td:first-child { color: #64748b; font-size: 0.75rem; }
+
+    .pos-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: #334155;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+    .pos-badge.first { background: #1d4ed8; color: #bfdbfe; }
+
+    .id-chip {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #60a5fa;
+    }
+    .score-bar-wrap { display: flex; align-items: center; gap: 10px; }
+    .score-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      transition: width 0.4s ease;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .badge-waiting  { background: #78350f20; color: #fbbf24; border: 1px solid #78350f; }
+    .badge-admitted { background: #05966920; color: #34d399; border: 1px solid #059669; }
+
+    .action-btn {
+      background: none;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #94a3b8;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .action-btn:hover { background: #dc2626; border-color: #dc2626; color: #fff; }
+
+    /* ─── Toast Notifications ────────────────────── */
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-left: 4px solid #3b82f6;
+      border-radius: 10px;
+      padding: 14px 18px;
+      min-width: 280px;
+      max-width: 360px;
+      box-shadow: 0 8px 32px #0008;
+      animation: toastIn 0.3s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .toast.success { border-left-color: #10b981; }
+    .toast.error   { border-left-color: #ef4444; }
+    .toast.warning { border-left-color: #f59e0b; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .toast-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 2px; }
+    .toast-msg   { font-size: 0.78rem; color: #94a3b8; }
+
+    /* ─── Modal ──────────────────────────────────── */
+    .modal-bg {
+      position: fixed; inset: 0;
+      background: #00000099;
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-bg.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 28px;
+      min-width: 340px;
+      max-width: 420px;
+      transform: scale(0.95);
+      transition: transform 0.2s;
+    }
+    .modal-bg.open .modal { transform: scale(1); }
+    .modal h3 { font-size: 1.1rem; margin-bottom: 8px; }
+    .modal p  { font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px; line-height: 1.6; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-actions .btn { width: auto; padding: 9px 20px; }
+
+    /* ─── Scrollbar ──────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+    /* ─── Empty state ────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #475569;
+    }
+    .empty-state .emoji { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* ─── Section header ─────────────────────────── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-header h2 { font-size: 1rem; font-weight: 700; }
+    .section-header span { font-size: 0.78rem; color: #64748b; }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; height: auto; }
+      .sidebar { height: auto; }
+      .main-panel { height: 600px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ───────────────────────────────────── -->
+<header>
+  <div class="logo">🎓</div>
+  <div>
+    <h1>College Admission Waiting List</h1>
+    <p>Queue-based Admission Management System &nbsp;·&nbsp; DS Mini Project</p>
+  </div>
+</header>
+
+<!-- ── Stats Bar ─────────────────────────────────── -->
+<div class="stats-bar">
+  <div class="stat-card">
+    <div class="val" id="stat-waiting">0</div>
+    <div class="lbl">Waiting</div>
+  </div>
+  <div class="stat-card green">
+    <div class="val" id="stat-admitted">0</div>
+    <div class="lbl">Admitted</div>
+  </div>
+  <div class="stat-card purple">
+    <div class="val" id="stat-total">0</div>
+    <div class="lbl">Total Processed</div>
+  </div>
+  <div class="stat-card orange">
+    <div class="val" id="stat-front">—</div>
+    <div class="lbl">Next in Queue</div>
+  </div>
+</div>
+
+<!-- ── Main Layout ────────────────────────────────── -->
+<div class="layout">
+
+  <!-- ── Sidebar ───────────────────────────────────── -->
+  <aside class="sidebar">
+
+    <!-- Add Applicant Form -->
+    <div class="card">
+      <div class="card-title">➕ Add Applicant</div>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="inp-name" placeholder="e.g. Aarav Sharma" />
+      </div>
+      <div class="form-group">
+        <label>Applied Course</label>
+        <select id="inp-course">
+          <option value="">Select a course…</option>
+          <option>Computer Science</option>
+          <option>Electronics & Comm</option>
+          <option>Mechanical Engg</option>
+          <option>Civil Engg</option>
+          <option>Information Tech</option>
+          <option>Data Science</option>
+          <option>Electrical Engg</option>
+          <option>Chemical Engg</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Entrance Score (0 – 100)</label>
+        <input type="number" id="inp-score" placeholder="e.g. 87.5" min="0" max="100" step="0.1"/>
+      </div>
+      <button class="btn btn-primary" onclick="addApplicant()">
+        ➕ Add to Waiting List
+      </button>
+    </div>
+
+    <!-- Queue Actions -->
+    <div class="card">
+      <div class="card-title">⚙️ Queue Operations</div>
+      <div class="action-grid">
+        <button class="btn btn-success" onclick="processNext()">✅ Process Next</button>
+        <button class="btn btn-secondary" onclick="peekFront()">👁 Peek Front</button>
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn btn-danger" onclick="confirmClear()">🗑 Clear Waiting List</button>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="card">
+      <div class="card-title">🔍 Search by ID</div>
+      <div class="search-row">
+        <input type="number" id="inp-search" placeholder="e.g. 1001" />
+        <button class="btn btn-secondary" onclick="searchApplicant()" style="width:auto;padding:10px 14px;">Go</button>
+      </div>
+      <div id="search-result" style="margin-top:12px;font-size:0.82rem;"></div>
+    </div>
+
+  </aside>
+
+  <!-- ── Main Panel ─────────────────────────────────── -->
+  <main class="main-panel">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" id="tab-queue" onclick="switchTab('queue')">
+        📋 Waiting List <span class="tab-badge" id="badge-queue">0</span>
+      </div>
+      <div class="tab" id="tab-admitted" onclick="switchTab('admitted')">
+        🎓 Admitted <span class="tab-badge" id="badge-admitted">0</span>
+      </div>
+    </div>
+
+    <!-- Table Area -->
+    <div class="table-area" id="main-content">
+      <!-- Injected by JS -->
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Toast Container ────────────────────────────── -->
+<div id="toast-container"></div>
+
+<!-- ── Confirm Modal ──────────────────────────────── -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h3 id="modal-title">⚠️ Confirm Action</h3>
+    <p id="modal-body">Are you sure?</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()" style="width:auto;padding:9px 20px;">Cancel</button>
+      <button class="btn btn-danger" id="modal-confirm-btn" style="width:auto;padding:9px 20px;">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  JAVASCRIPT — Queue Logic & UI                  -->
+<!-- ═══════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ─────────────────────────────────────────────────
+//  DATA LAYER — Pure Queue Logic (mirrors C++ code)
+// ─────────────────────────────────────────────────
+
+class Applicant {
+  constructor(id, name, course, score) {
+    this.id     = id;
+    this.name   = name;
+    this.course = course;
+    this.score  = parseFloat(score);
+    this.status = 'Waiting';
+    this.next   = null;           // linked-list pointer
+    this.joinedAt = new Date().toLocaleTimeString();
+  }
+}
+
+class AdmissionQueue {
+  constructor() {
+    this.front       = null;   // first node (next to process)
+    this.rear        = null;   // last node (most recent)
+    this.size        = 0;
+    this.nextID      = 1001;
+    this.admittedHead= null;   // separate linked list for admitted
+    this.admittedSize= 0;
+    this.totalProcessed = 0;
+  }
+
+  isEmpty() { return this.front === null; }
+
+  // ENQUEUE — add to rear
+  enqueue(name, course, score) {
+    const node = new Applicant(this.nextID++, name, course, score);
+    if (this.isEmpty()) {
+      this.front = node;
+      this.rear  = node;
+    } else {
+      this.rear.next = node;
+      this.rear      = node;
+    }
+    this.size++;
+    return node;
+  }
+
+  // DEQUEUE — remove from front, move to admitted list
+  dequeue() {
+    if (this.isEmpty()) return null;
+
+    const processed  = this.front;
+    this.front        = this.front.next;
+    if (!this.front) this.rear = null;
+
+    processed.next    = null;
+    processed.status  = 'Admitted';
+    processed.admittedAt = new Date().toLocaleTimeString();
+
+    // Prepend to admitted linked list
+    processed.next    = this.admittedHead;
+    this.admittedHead = processed;
+
+    this.size--;
+    this.admittedSize++;
+    this.totalProcessed++;
+    return processed;
+  }
+
+  // PEEK — view front without removing
+  peek() { return this.front; }
+
+  // SEARCH — traverse both lists
+  search(id) {
+    let cur = this.front, pos = 1;
+    while (cur) {
+      if (cur.id === id) return { node: cur, list: 'waiting', pos };
+      cur = cur.next; pos++;
+    }
+    cur = this.admittedHead;
+    while (cur) {
+      if (cur.id === id) return { node: cur, list: 'admitted', pos: null };
+      cur = cur.next;
+    }
+    return null;
+  }
+
+  // CLEAR — remove all waiting applicants
+  clear() {
+    const count = this.size;
+    this.front = null;
+    this.rear  = null;
+    this.size  = 0;
+    return count;
+  }
+
+  // TRAVERSE waiting list → array
+  toArray() {
+    const arr = [];
+    let cur = this.front;
+    while (cur) { arr.push(cur); cur = cur.next; }
+    return arr;
+  }
+
+  // TRAVERSE admitted list → array
+  admittedToArray() {
+    const arr = [];
+    let cur = this.admittedHead;
+    while (cur) { arr.push(cur); cur = cur.next; }
+    return arr;
+  }
+}
+
+// ─────────────────────────────────────────────────
+//  INITIALISE
+// ─────────────────────────────────────────────────
+const queue = new AdmissionQueue();
+let currentTab = 'queue';
+
+// Pre-load demo data
+const demos = [
+  ['Aarav Sharma',  'Computer Science',    92.5],
+  ['Priya Patel',   'Electronics & Comm',  87.0],
+  ['Rahul Gupta',   'Mechanical Engg',     78.5],
+  ['Sneha Verma',   'Civil Engg',          83.0],
+  ['Kiran Mehta',   'Computer Science',    95.0],
+  ['Divya Nair',    'Data Science',        88.5],
+];
+demos.forEach(([n, c, s]) => queue.enqueue(n, c, s));
+
+render();
+
+// ─────────────────────────────────────────────────
+//  RENDER
+// ─────────────────────────────────────────────────
+function render() {
+  updateStats();
+  if (currentTab === 'queue')    renderWaitingTab();
+  else                           renderAdmittedTab();
+}
+
+function updateStats() {
+  document.getElementById('stat-waiting').textContent  = queue.size;
+  document.getElementById('stat-admitted').textContent = queue.admittedSize;
+  document.getElementById('stat-total').textContent    = queue.totalProcessed;
+  document.getElementById('stat-front').textContent    =
+    queue.peek() ? queue.peek().name.split(' ')[0] : '—';
+
+  document.getElementById('badge-queue').textContent    = queue.size;
+  document.getElementById('badge-admitted').textContent = queue.admittedSize;
+}
+
+function renderWaitingTab() {
+  const arr = queue.toArray();
+  const el  = document.getElementById('main-content');
+
+  if (arr.length === 0) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">📭</div>
+        <p>Waiting list is empty.<br/>Add an applicant using the form on the left.</p>
+      </div>`;
+    return;
+  }
+
+  // Queue visual strip
+  const visualNodes = arr.map((a, i) => {
+    const isFirst = i === 0;
+    const isLast  = i === arr.length - 1;
+    const cls     = isFirst ? 'front-card' : (isLast ? 'rear-card' : '');
+    const lbl     = isFirst ? 'FRONT ← next' : (isLast ? 'REAR ← last' : `#${i+1}`);
+    const arrow   = i < arr.length - 1 ? `<div class="q-arrow">→</div>` : '';
+    return `
+      <div class="q-node">
+        <div class="q-card ${cls}">
+          <div class="q-label">${lbl}</div>
+          <div class="q-id">#${a.id}</div>
+          <div class="q-name">${a.name.split(' ')[0]}</div>
+          <div class="q-score">${a.score}</div>
+        </div>
+        ${arrow}
+      </div>`;
+  }).join('');
+
+  // Table
+  const rows = arr.map((a, i) => `
+    <tr>
+      <td><span class="pos-badge ${i===0?'first':''}">${i+1}</span></td>
+      <td><span class="id-chip">#${a.id}</span></td>
+      <td><strong>${a.name}</strong></td>
+      <td>${a.course}</td>
+      <td>
+        <div class="score-bar-wrap">
+          <span>${a.score}</span>
+          <div class="score-bar" style="width:${a.score}px; max-width:80px;"></div>
+        </div>
+      </td>
+      <td><span class="badge badge-waiting">⏳ Waiting</span></td>
+      <td>${a.joinedAt}</td>
+      <td><button class="action-btn" onclick="removeApplicant(${a.id})">✕ Remove</button></td>
+    </tr>`).join('');
+
+  el.innerHTML = `
+    <div class="section-header">
+      <h2>Queue Visualisation</h2>
+      <span>Front (left) → Rear (right)</span>
+    </div>
+    <div class="queue-visual">${visualNodes}</div>
+
+    <div class="section-header" style="margin-top:8px;">
+      <h2>Waiting List Table</h2>
+      <span>${arr.length} applicant${arr.length!==1?'s':''}</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Pos</th><th>ID</th><th>Name</th>
+          <th>Course</th><th>Score</th><th>Status</th>
+          <th>Joined At</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderAdmittedTab() {
+  const arr = queue.admittedToArray();
+  const el  = document.getElementById('main-content');
+
+  if (arr.length === 0) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">🎓</div>
+        <p>No students have been admitted yet.<br/>Use "Process Next" to admit applicants.</p>
+      </div>`;
+    return;
+  }
+
+  const rows = arr.map(a => `
+    <tr>
+      <td><span class="id-chip">#${a.id}</span></td>
+      <td><strong>${a.name}</strong></td>
+      <td>${a.course}</td>
+      <td>
+        <div class="score-bar-wrap">
+          <span>${a.score}</span>
+          <div class="score-bar" style="width:${a.score}px; max-width:80px;"></div>
+        </div>
+      </td>
+      <td><span class="badge badge-admitted">✅ Admitted</span></td>
+      <td>${a.admittedAt || '—'}</td>
+    </tr>`).join('');
+
+  el.innerHTML = `
+    <div class="section-header">
+      <h2>Admitted Students</h2>
+      <span>${arr.length} student${arr.length!==1?'s':''} admitted</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Name</th><th>Course</th>
+          <th>Score</th><th>Status</th><th>Admitted At</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ─────────────────────────────────────────────────
+//  OPERATIONS
+// ─────────────────────────────────────────────────
+
+function addApplicant() {
+  const name   = document.getElementById('inp-name').value.trim();
+  const course = document.getElementById('inp-course').value;
+  const score  = parseFloat(document.getElementById('inp-score').value);
+
+  if (!name)              return toast('error',   '✘ Missing Name',   'Please enter the applicant\'s name.');
+  if (!course)            return toast('error',   '✘ Missing Course', 'Please select a course.');
+  if (isNaN(score) || score < 0 || score > 100)
+                          return toast('error',   '✘ Invalid Score',  'Score must be between 0 and 100.');
+
+  const node = queue.enqueue(name, course, score);
+  toast('success', '✔ Applicant Added', `${name} joined at position ${queue.size} — ID #${node.id}`);
+
+  // Clear form
+  document.getElementById('inp-name').value  = '';
+  document.getElementById('inp-course').value= '';
+  document.getElementById('inp-score').value = '';
+
+  render();
+}
+
+function processNext() {
+  if (queue.isEmpty()) return toast('error', '✘ Queue Empty', 'No applicants to process.');
+
+  const front = queue.peek();
+  openModal(
+    '✅ Process Next Applicant',
+    `Admit <strong>${front.name}</strong> (ID #${front.id}, ${front.course}, Score: ${front.score})?`,
+    () => {
+      const admitted = queue.dequeue();
+      toast('success', '🎓 Admitted!', `${admitted.name} has been successfully admitted.`);
+      currentTab = 'queue';
+      render();
+    }
+  );
+}
+
+function peekFront() {
+  if (queue.isEmpty()) return toast('warning', '📭 Queue Empty', 'No applicants in the waiting list.');
+  const f = queue.peek();
+  toast('info', `👁 Next: ${f.name}`, `ID #${f.id} · ${f.course} · Score: ${f.score}`);
+}
+
+function searchApplicant() {
+  const id  = parseInt(document.getElementById('inp-search').value);
+  const box = document.getElementById('search-result');
+
+  if (isNaN(id)) {
+    box.innerHTML = `<span style="color:#ef4444;">Enter a valid numeric ID.</span>`;
+    return;
+  }
+
+  const result = queue.search(id);
+  if (!result) {
+    box.innerHTML = `<span style="color:#ef4444;">✘ No applicant with ID #${id} found.</span>`;
+  } else {
+    const { node: a, list, pos } = result;
+    const listLabel = list === 'waiting'
+      ? `<span style="color:#fbbf24;">⏳ Waiting — position ${pos}</span>`
+      : `<span style="color:#34d399;">✅ Admitted</span>`;
+    box.innerHTML = `
+      <div style="background:#1e293b;border-radius:8px;padding:12px;border:1px solid #334155;line-height:1.9;">
+        <div>${listLabel}</div>
+        <div><strong>#${a.id}</strong> · ${a.name}</div>
+        <div style="color:#94a3b8;font-size:0.75rem;">${a.course} · Score: ${a.score}</div>
+      </div>`;
+  }
+}
+
+function removeApplicant(id) {
+  // Remove from waiting queue by rebuilding linked list (O(n))
+  let prev = null, cur = queue.front;
+  while (cur) {
+    if (cur.id === id) {
+      if (prev) prev.next = cur.next;
+      else      queue.front = cur.next;
+      if (!cur.next) queue.rear = prev;
+      queue.size--;
+      toast('warning', '✘ Removed', `Applicant #${id} removed from waiting list.`);
+      render();
+      return;
+    }
+    prev = cur; cur = cur.next;
+  }
+}
+
+function confirmClear() {
+  if (queue.isEmpty()) return toast('warning', '📭 Already Empty', 'The waiting list is already empty.');
+  openModal(
+    '🗑 Clear Waiting List',
+    `This will permanently remove all <strong>${queue.size}</strong> applicants from the waiting list. This cannot be undone.`,
+    () => {
+      const count = queue.clear();
+      toast('warning', '🗑 Cleared', `${count} applicant(s) removed from the waiting list.`);
+      render();
+    }
+  );
+}
+
+// ─────────────────────────────────────────────────
+//  TABS
+// ─────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-queue').classList.toggle('active',    tab === 'queue');
+  document.getElementById('tab-admitted').classList.toggle('active', tab === 'admitted');
+  render();
+}
+
+// ─────────────────────────────────────────────────
+//  MODAL
+// ─────────────────────────────────────────────────
+let _modalCallback = null;
+function openModal(title, body, cb) {
+  document.getElementById('modal-title').innerHTML = title;
+  document.getElementById('modal-body').innerHTML  = body;
+  _modalCallback = cb;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+  _modalCallback = null;
+}
+document.getElementById('modal-confirm-btn').onclick = () => {
+  if (_modalCallback) _modalCallback();
+  closeModal();
+};
+document.getElementById('modal-bg').onclick = (e) => {
+  if (e.target === document.getElementById('modal-bg')) closeModal();
+};
+
+// ─────────────────────────────────────────────────
+//  TOAST NOTIFICATIONS
+// ─────────────────────────────────────────────────
+function toast(type, title, msg) {
+  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `
+    <div class="toast-icon">${icons[type] || 'ℹ️'}</div>
+    <div>
+      <div class="toast-title">${title}</div>
+      <div class="toast-msg">${msg}</div>
+    </div>`;
+  container.appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(40px)';
+    el.style.transition='all 0.3s'; setTimeout(()=>el.remove(), 300); }, 3200);
+}
+
+// ─────────────────────────────────────────────────
+//  Enter key shortcuts
+// ─────────────────────────────────────────────────
+document.getElementById('inp-score').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addApplicant();
+});
+document.getElementById('inp-search').addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchApplicant();
+});
+</script>
+</body>
+</html>
